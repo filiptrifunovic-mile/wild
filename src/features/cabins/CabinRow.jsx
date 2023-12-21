@@ -2,9 +2,9 @@
 /* eslint-disable no-unused-vars */
 import styled from "styled-components";
 import { formatCurrency } from "../../utils/helpers";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteCabin } from "../../services/apiCabins";
-import toast from "react-hot-toast";
+import { useState } from "react";
+import CreateCabinForm from "./CreateCabinForm";
+import { useDeleteCabin } from "./useDeleteCabin";
 
 const TableRow = styled.div`
   display: grid;
@@ -46,30 +46,27 @@ const Discount = styled.div`
 `;
 
 function CabinRow({ cabin }) {
-  const queryClient = useQueryClient();
+  const [showForm, setShowForm] = useState(false);
 
-  const { isLoading, mutate } = useMutation({
-    mutationFn: (id) => deleteCabin(id),
-    onSuccess: () => {
-      toast.success("Cabin deleted."),
-        queryClient.invalidateQueries({
-          queryKey: ["cabins"],
-        });
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const { deleteCabin, isDeleting } = useDeleteCabin();
 
   return (
-    <TableRow role="row">
-      <Img src={cabin.image} />
-      <Cabin>{cabin.name}</Cabin>
-      <div>Fits up to {cabin.maxCapacity} guests</div>
-      <Price>{formatCurrency(cabin.regularPrice)}</Price>
-      <Discount>{formatCurrency(cabin.discount)}</Discount>
-      <button onClick={() => mutate(cabin.id)} disabled={isLoading}>
-        Delete
-      </button>
-    </TableRow>
+    <>
+      <TableRow role="row">
+        <Img src={cabin.image} />
+        <Cabin>{cabin.name}</Cabin>
+        <div>Fits up to {cabin.maxCapacity} guests</div>
+        <Price>{formatCurrency(cabin.regularPrice)}</Price>
+        <Discount>{formatCurrency(cabin.discount)}</Discount>
+        <div>
+          <button onClick={() => setShowForm((prev) => !prev)}>Edit</button>
+          <button onClick={() => deleteCabin(cabin.id)} disabled={isDeleting}>
+            Delete
+          </button>
+        </div>
+      </TableRow>
+      {showForm && <CreateCabinForm cabinToEdit={cabin} />}
+    </>
   );
 }
 
