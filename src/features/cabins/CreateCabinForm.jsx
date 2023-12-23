@@ -49,7 +49,7 @@ const Error = styled.span`
   color: var(--color-red-700);
 `;
 
-function CreateCabinForm({ cabinToEdit = {} }) {
+function CreateCabinForm({ cabinToEdit = {}, onCloseModal }) {
   const { id: editId, ...editValues } = cabinToEdit;
 
   const isEditSession = Boolean(editId);
@@ -68,6 +68,7 @@ function CreateCabinForm({ cabinToEdit = {} }) {
       toast.success("New cabin created!");
       queryClient.invalidateQueries({ queryKey: ["cabins"] });
       reset();
+      onCloseModal?.();
     },
     onError: (err) => toast.error(err.message),
   });
@@ -78,6 +79,7 @@ function CreateCabinForm({ cabinToEdit = {} }) {
       toast.success("Cabin edited!");
       queryClient.invalidateQueries({ queryKey: ["cabins"] });
       reset();
+      onCloseModal?.();
     },
     onError: (err) => toast.error(err.message),
   });
@@ -95,7 +97,10 @@ function CreateCabinForm({ cabinToEdit = {} }) {
   function onError(errors) {}
 
   return (
-    <Form onSubmit={handleSubmit(onSubmit, onError)}>
+    <Form
+      onSubmit={handleSubmit(onSubmit, onError)}
+      type={onCloseModal ? "modal" : "regular"}
+    >
       <FormRow>
         <Label htmlFor="name">Cabin name</Label>
         <Input
@@ -186,7 +191,11 @@ function CreateCabinForm({ cabinToEdit = {} }) {
 
       <FormRow>
         {/* type is an HTML attribute! */}
-        <Button variation="secondary" type="reset">
+        <Button
+          variation="secondary"
+          type="reset"
+          onClick={() => onCloseModal?.()}
+        >
           Cancel
         </Button>
         <Button disabled={isWorking}>
